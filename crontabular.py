@@ -41,7 +41,7 @@ def get_args():
             elif argv[i] == "--user":
                 user = argv[i + 1]
                 i += 2
-            elif argv[i] == "--tabfile":
+            elif argv[i] == "--tab-file":
                 tab_file = argv[i + 1]
                 i += 2
             elif argv[i] == "--all":
@@ -59,6 +59,15 @@ def get_args():
 
 
 def find_job(tab, time=None, command=None, comment=None):
+    """
+    Finds the all jobs in the crontab that conforms to the specified parameters.
+
+    :param tab:     Crontab to search in
+    :param time:    Time filter
+    :param command: Command filter
+    :param comment: Comment filter
+    :return:        All jobs that match the parameters
+    """
     jobs = list()
     for job in tab:
         if time is not None and job != time:
@@ -72,6 +81,14 @@ def find_job(tab, time=None, command=None, comment=None):
 
 
 def get_crontab():
+    """
+    Fetches a crontab, based on tese, but not all options:
+        * --user
+        * --tab-file
+    If none of these options are specified, the default crontab is returned.
+
+    :return: A crontab object
+    """
     if user is not None and tab_file is not None:
         fail("Both user and tabfile options cannot be set")
 
@@ -91,7 +108,13 @@ def write_crontab(tab):
         tab.write()
 
 
-def create_crontab():
+def create_cronjob():
+    """
+    Creates a cronjob
+    Requires --time and --command to be specified
+
+    :return: 0 if successful
+    """
     if command is None or time is None:
         fail("Time and command options must be set")
 
@@ -102,7 +125,20 @@ def create_crontab():
     return 0
 
 
-def delete_crontab():
+def delete_cronjob():
+    """
+    Deletes cronjob(s) that match any of these options:
+        * --time
+        * --command
+        * --comment
+    At least one of these options must be specified.
+
+    An optional option can be added:
+        * --all
+    WARNING: if --all is specified, the command will delete every match
+
+    :return: 0 if successful
+    """
     if time is None and command is None and comment is None:
         fail("No search criteria specified (time, command, comment)")
 
@@ -125,10 +161,12 @@ def delete_crontab():
 def main_procedure():
     exit_status = 1
     get_args()
+
     if argument == "create":
-        exit_status = create_crontab()
+        exit_status = create_cronjob()
     elif argument == "delete":
-        exit_status = delete_crontab()
+        exit_status = delete_cronjob()
+
     exit(exit_status)
 
 main_procedure()
